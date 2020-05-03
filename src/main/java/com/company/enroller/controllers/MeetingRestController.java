@@ -3,11 +3,11 @@ package com.company.enroller.controllers;
 import com.company.enroller.model.Meeting;
 import com.company.enroller.model.Participant;
 import com.company.enroller.persistence.MeetingService;
-import com.company.enroller.persistence.ParticipantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.company.enroller.persistence.ParticipantService;
 
 import java.util.Collection;
 
@@ -17,6 +17,7 @@ public class MeetingRestController {
 
 	@Autowired
 	MeetingService meetingService;
+	ParticipantService participantService;
 
 
 	@RequestMapping(value = "", method = RequestMethod.GET)
@@ -38,7 +39,11 @@ public class MeetingRestController {
 	@RequestMapping(value = "/{id}/participants", method = RequestMethod.GET)
 	public ResponseEntity<?> getMeetingParticipants(@PathVariable("id") long id) {
 		Meeting meeting = meetingService.findById(id);
-		return new ResponseEntity<Collection<Participant>>(meeting.getParticipants(), HttpStatus.OK);
+		Collection<Participant> participants = meeting.getParticipants();
+		if (participants ==null) {
+			return new ResponseEntity(HttpStatus.NOT_FOUND);
+		}
+		return new ResponseEntity<Collection<Participant>>(participants, HttpStatus.OK);
 	}
 
 
@@ -62,7 +67,23 @@ public class MeetingRestController {
 		}
 
 		meetingService.deleteMeeting(meeting);
-		return new ResponseEntity<Participant>(HttpStatus.NO_CONTENT);
+		return new ResponseEntity<Meeting>(HttpStatus.NO_CONTENT);
+	}
+
+	@RequestMapping(value = "/{mid}/{pid}", method = RequestMethod.PUT)
+	public ResponseEntity<?> addNewParticipant(@PathVariable("mid") long mid, @PathVariable("pid") String pid) {
+		Meeting meeting = meetingService.findById(mid);
+		Participant participant = participantService.findByLogin(pid);
+		meeting.addParticipant(participant);
+		return new ResponseEntity(HttpStatus.OK);
+	}
+
+	@RequestMapping(value = "/{mid}/{pid}", method = RequestMethod.DELETE)
+	public ResponseEntity<?> deleteParticipant(@PathVariable("mid") long mid, @PathVariable("pid") String pid) {
+		Meeting meeting = meetingService.findById(mid);
+		Participant participant = participantService.findByLogin(pid);
+		meeting.removeParticipant(participant);
+		return new ResponseEntity(HttpStatus.NO_CONTENT);
 	}
 
 
