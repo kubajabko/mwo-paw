@@ -45,4 +45,18 @@ public class MeetingService {
 		transaction.commit();
 	}
 
+	public void addParticipant(Participant participant, Meeting meeting) {
+		meeting.addParticipant(participant);
+		Transaction transaction = this.session.beginTransaction();
+		session.save(meeting);
+		transaction.commit();
+	}
+
+	public void removeParticipant(Participant participant, Meeting meeting) {
+		meeting.removeParticipant(participant);
+		Transaction transaction = this.session.beginTransaction();
+		session.save(meeting);
+		transaction.commit();
+	}
+
 }
